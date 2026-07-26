@@ -6,7 +6,7 @@ import json
 import sys
 import time
 
-from wb_dali_ha import collect_live_dali_devices, connect, device_items
+from wb_dali_ha import collect_live_dali_devices, connect, device_items, friendly_device_name
 
 
 DEFAULT_CONTROLS = {"wanted_level", "actual_level", "on_and_step_up", "off", "error_status"}
@@ -31,7 +31,7 @@ def refresh_devices(config):
         previous_controls = previous.get("controls", {})
         devices.append({
             "id": device,
-            "name": previous.get("name") or device,
+            "name": previous.get("name") if previous.get("name") not in {None, "", device} else friendly_device_name(device),
             "light": previous.get("light", True),
             "controls": {
                 control: previous_controls.get(control, control in DEFAULT_CONTROLS)

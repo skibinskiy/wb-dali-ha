@@ -59,10 +59,20 @@ def is_physical_dali_device(device, controls):
     }.issubset(controls)
 
 
+def configured_dali_devices(path="/etc/wb-mqtt-dali.conf"):
+    """Read current DALI MQTT IDs from wb-mqtt-dali configuration if present."""
+    try:
+        with open(path, encoding="utf-8") as stream:
+            text = stream.read()
+        ids = set(re.findall(r"wb-dali_[^\"'\\s]+_bus_[0-9]+_[0-9]+", text))
+        return ids
+    except (OSError, UnicodeError):
+        return set()
+
+
 def collect_live_dali_devices(client, wait_seconds=5):
-    """Collect only devices that publish a non-retained live MQTT update."""
+    """Collect physical DALI devices, filtering stale MQTT retained topics."""
     found = {}
-    live = set()
 
     def on_message(_client, _userdata, message):
         parts = message.topic.split("/")
@@ -70,17 +80,19 @@ def collect_live_dali_devices(client, wait_seconds=5):
             return
         device, control = parts[2], parts[4]
         found.setdefault(device, set()).add(control)
-        if not message.retain:
-            live.add(device)
 
     client.message_callback_add("/devices/+/controls/#", on_message)
     client.subscribe("/devices/+/controls/#", qos=1)
     time.sleep(wait_seconds)
-    return {
+    configured = configured_dali_devices()
+    candidates = {
         device: controls
         for device, controls in found.items()
-        if device in live and is_physical_dali_device(device, controls)
+        if is_physical_dali_device(device, controls)
     }
+    if configured:
+        candidates = {device: controls for device, controls in candidates.items() if device in configured}
+    return candidates
 
 
 def clear_owned_discovery(client, prefix):
@@ -91,7 +103,13 @@ def clear_owned_discovery(client, prefix):
         parts = message.topic.split("/")
         if len(parts) == 4 and parts[0] == prefix and parts[3] == "config":
             object_id = parts[2]
-            if "wb_dali_" in object_id or object_id.startswith("wb-dali"):
+            payload = message.payload.decode("utf-8", errors="ignore")
+            if (
+                "wb_dali_" in object_id
+                or object_id.startswith("wb-dali")
+                or "wb-dali" in payload
+                or "wb_dali" in payload
+            ):
                 topics.append(message.topic)
 
     client.message_callback_add(f"{prefix}/+/+/config", on_message)
@@ -111,19 +129,26 @@ def device_block(device, name):
     }
 
 
+def friendly_device_name(device):
+    match = DALI_DEVICE_RE.match(device)
+    if not match:
+        return device
+    gateway, bus, address = device.split("_")[1], device.split("_bus_")[1].split("_")[0], device.rsplit("_", 1)[1]
+    return f"DALI {gateway} — шина {bus}, адрес {address}"
+
+
 def payloads(device, settings, prefix):
-    name = settings.get("name") or device
+    name = settings.get("name") or friendly_device_name(device)
     enabled = settings.get("controls", {})
-    uid = device.replace("/", "_")
+    uid = re.sub(r"[^a-zA-Z0-9_]+", "_", device)
     common = {"device": device_block(device, name)}
     result = []
 
-    if settings.get("light", True):
+    if settings.get("light", True) and enabled.get("wanted_level", True):
         light = dict(common)
         light.update({
             "name": name,
             "unique_id": f"{uid}_light",
-            "schema": "json",
             "command_topic": wb_topic(device, "wanted_level", True),
             "brightness_state_topic": wb_topic(device, "actual_level"),
             "brightness_command_topic": wb_topic(device, "wanted_level", True),
@@ -136,7 +161,7 @@ def payloads(device, settings, prefix):
         if not enabled.get("wanted_level", True):
             light.pop("brightness_command_topic", None)
             light.pop("brightness_state_topic", None)
-        result.append((discovery_topic(prefix, "light", uid), light))
+        result.append((discovery_topic(prefix, "light", f"{uid}_light"), light))
 
     control_specs = {
         "on_and_step_up": ("button", "On", "button", "1"),
@@ -146,6 +171,8 @@ def payloads(device, settings, prefix):
         "go_to_scene": ("number", "Go to scene", "number", None),
     }
     for control, (component, title, kind, payload) in control_specs.items():
+        if settings.get("light", True) and control in {"on_and_step_up", "off"}:
+            continue
         if not enabled.get(control, False):
             continue
         entity = dict(common)
@@ -160,7 +187,7 @@ def payloads(device, settings, prefix):
             entity.update({"min": 0, "max": 15, "step": 1, "mode": "box"})
         result.append((discovery_topic(prefix, component, f"{uid}_{control}"), entity))
 
-    if enabled.get("wanted_level", False):
+    if not settings.get("light", True) and enabled.get("wanted_level", False):
         result.append((discovery_topic(prefix, "number", f"{uid}_wanted_level"), {
             **common,
             "name": f"{name} brightness raw",
@@ -170,7 +197,7 @@ def payloads(device, settings, prefix):
             "min": 0, "max": 100, "step": 1, "unit_of_measurement": "%"
         }))
 
-    if enabled.get("actual_level", False):
+    if not settings.get("light", True) and enabled.get("actual_level", False):
         result.append((discovery_topic(prefix, "sensor", f"{uid}_actual_level"), {
             **common,
             "name": f"{name} actual level",

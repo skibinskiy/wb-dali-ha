@@ -38,6 +38,7 @@
           "controls": {
             "type": "object",
             "title": "Контролы для передачи в Home Assistant",
+            "description": "Яркость, текущий уровень, включение и выключение объединяются в один источник света. Отдельные сущности создаются только для дополнительных контролов.",
             "propertyOrder": 4,
             "properties": {
               "wanted_level": { "type": "boolean", "title": "Яркость (wanted_level)", "_format": "checkbox" },

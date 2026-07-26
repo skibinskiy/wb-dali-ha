@@ -1,3 +1,19 @@
+wb-dali-ha (0.2.3) unstable; urgency=low
+
+  * Publish one native Home Assistant light instead of duplicate raw controls.
+  * Remove the invalid JSON light schema and use plain numeric DALI payloads.
+  * Use stable normalized discovery object IDs and friendly device names.
+  * Clear legacy discovery payloads belonging to this integration.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 19:00:00 +0600
+
+wb-dali-ha (0.2.2) unstable; urgency=low
+
+  * Use the wb-mqtt-dali configuration as the source of current device IDs.
+  * Keep retained MQTT values for discovering the available controls.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 18:50:00 +0600
+
 wb-dali-ha (0.2.1) unstable; urgency=low
 
   * Ignore retained-only and non-addressed DALI service topics.

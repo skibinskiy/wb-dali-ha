@@ -66,6 +66,17 @@ installs dependencies, and starts `wb-dali-ha.service`. It does not modify the
 existing DALI configuration. After installation, open the Wiren Board WebUI
 configuration page and select the controls to expose in Home Assistant.
 
+## Fast local installation during development
+
+Before publishing a release, install the current source directly from a Mac:
+
+```sh
+./install-direct.sh
+```
+
+The script copies only the service and schema files to the controller. It does
+not replace `/etc/wb-dali-ha.json`, so selected controls are preserved.
+
 ## Publishing a release
 
 Create a public GitHub repository, copy this directory into it, then push a
