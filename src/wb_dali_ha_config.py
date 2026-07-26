@@ -6,7 +6,7 @@ import json
 import sys
 import time
 
-from wb_dali_ha import connect, device_items
+from wb_dali_ha import collect_live_dali_devices, connect, device_items
 
 
 DEFAULT_CONTROLS = {"wanted_level", "actual_level", "on_and_step_up", "off", "error_status"}
@@ -18,16 +18,7 @@ def refresh_devices(config):
     probe_config["mqtt"] = dict(config.get("mqtt", {}))
     probe_config["mqtt"]["client_id"] = "wb-dali-ha-config"
     client = connect(probe_config)
-    found = {}
-
-    def on_message(_client, _userdata, message):
-        parts = message.topic.split("/")
-        if len(parts) == 5 and parts[1] == "devices" and parts[3] == "controls":
-            found.setdefault(parts[2], set()).add(parts[4])
-
-    client.message_callback_add("/devices/+/controls/#", on_message)
-    client.subscribe("/devices/+/controls/#", qos=1)
-    time.sleep(1.5)
+    found = collect_live_dali_devices(client)
     client.loop_stop()
     client.disconnect()
 

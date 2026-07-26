@@ -5,6 +5,7 @@ import argparse
 import json
 import logging
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -16,6 +17,7 @@ except ImportError:  # pragma: no cover - gives an actionable controller error
 
 LOG = logging.getLogger("wb-dali-ha")
 ROOT = "/devices/"
+DALI_DEVICE_RE = re.compile(r"^wb-dali_[^/]+_bus_[0-9]+_[0-9]+$")
 
 
 def read_config(path):
@@ -48,6 +50,56 @@ def wb_topic(device, control, command=False):
 
 def discovery_topic(prefix, component, uid):
     return f"{prefix}/{component}/{uid}/config"
+
+
+def is_physical_dali_device(device, controls):
+    """Exclude the wb-dali root, broadcast objects and non-ballast topics."""
+    return bool(DALI_DEVICE_RE.match(device)) and {
+        "actual_level", "wanted_level"
+    }.issubset(controls)
+
+
+def collect_live_dali_devices(client, wait_seconds=5):
+    """Collect only devices that publish a non-retained live MQTT update."""
+    found = {}
+    live = set()
+
+    def on_message(_client, _userdata, message):
+        parts = message.topic.split("/")
+        if len(parts) != 5 or parts[1] != "devices" or parts[3] != "controls":
+            return
+        device, control = parts[2], parts[4]
+        found.setdefault(device, set()).add(control)
+        if not message.retain:
+            live.add(device)
+
+    client.message_callback_add("/devices/+/controls/#", on_message)
+    client.subscribe("/devices/+/controls/#", qos=1)
+    time.sleep(wait_seconds)
+    return {
+        device: controls
+        for device, controls in found.items()
+        if device in live and is_physical_dali_device(device, controls)
+    }
+
+
+def clear_owned_discovery(client, prefix):
+    """Remove retained Discovery configs previously created by this package."""
+    topics = []
+
+    def on_message(_client, _userdata, message):
+        parts = message.topic.split("/")
+        if len(parts) == 4 and parts[0] == prefix and parts[3] == "config":
+            object_id = parts[2]
+            if "wb_dali_" in object_id or object_id.startswith("wb-dali"):
+                topics.append(message.topic)
+
+    client.message_callback_add(f"{prefix}/+/+/config", on_message)
+    client.subscribe(f"{prefix}/+/+/config", qos=1)
+    time.sleep(1)
+    for topic in topics:
+        client.publish(topic, "", qos=1, retain=True)
+        LOG.info("removed stale discovery topic %s", topic)
 
 
 def device_block(device, name):
@@ -150,16 +202,7 @@ def publish_all(client, config):
 
 
 def discover(client, config):
-    found = {}
-
-    def on_message(_client, _userdata, message):
-        parts = message.topic.split("/")
-        if len(parts) == 5 and parts[1] == "devices" and parts[3] == "controls":
-            found.setdefault(parts[2], set()).add(parts[4])
-
-    client.message_callback_add("/devices/+/controls/#", on_message)
-    client.subscribe("/devices/+/controls/#", qos=1)
-    time.sleep(2)
+    found = collect_live_dali_devices(client)
     result = dict(config)
     result["devices"] = []
     for device, controls in sorted(found.items()):
@@ -203,6 +246,7 @@ def main():
             with open(output, "w", encoding="utf-8") as stream:
                 json.dump(config, stream, indent=2, ensure_ascii=False)
             LOG.info("wrote %s", output)
+        clear_owned_discovery(client, config["mqtt"].get("discovery_prefix", "homeassistant").strip("/"))
         publish_all(client, config)
         if args.once:
             return 0

@@ -1,3 +1,10 @@
+wb-dali-ha (0.2.1) unstable; urgency=low
+
+  * Ignore retained-only and non-addressed DALI service topics.
+  * Remove stale Home Assistant Discovery records on restart.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 18:40:00 +0600
+
 wb-dali-ha (0.2.0) unstable; urgency=low
 
   * Refresh DALI devices from MQTT when the WebUI configuration is opened.

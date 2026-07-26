@@ -46,6 +46,12 @@ their current MQTT identifiers. Each device is shown as a separate form item;
 its controls are selected with checkboxes and only selected controls are
 published to Home Assistant Discovery.
 
+Discovery deliberately ignores retained-only MQTT topics. This prevents old
+addresses and service objects such as `wb-dali`, `broadcast`, and group topics
+from becoming Home Assistant devices after a DALI re-addressing operation.
+On service restart, retained Discovery records owned by this package are
+removed before the current configuration is published.
+
 ## Installation for users
 
 After a GitHub release exists, users install the latest package on a Wiren
