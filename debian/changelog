@@ -1,3 +1,9 @@
+wb-dali-ha (0.1.2) unstable; urgency=low
+
+  * Install build-essential in the GitHub Actions build environment.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 17:50:00 +0600
+
 wb-dali-ha (0.1.0) unstable; urgency=low
 
   * Initial public release.
