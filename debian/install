@@ -2,4 +2,4 @@ src/wb_dali_ha.py usr/lib/wb-dali-ha
 src/wb_dali_ha_config.py usr/lib/wb-dali-ha
 config/wb-dali-ha.schema.json usr/share/wb-mqtt-confed/schemas
 config/wb-dali-ha.example.json etc
-debian/wb-dali-ha.service lib/systemd/system
+debian/wb-dali-ha.service etc/systemd/system

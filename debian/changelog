@@ -1,3 +1,9 @@
+wb-dali-ha (0.1.5) unstable; urgency=low
+
+  * Install the systemd unit under /etc/systemd/system for older controllers.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 18:20:00 +0600
+
 wb-dali-ha (0.1.4) unstable; urgency=low
 
   * Force gzip compression for binary Debian control and data archives.
