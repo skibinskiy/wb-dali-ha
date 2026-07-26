@@ -5,7 +5,7 @@ from wb_dali_ha import payloads
 
 
 config = json.loads(Path("config/wb-dali-ha.example.json").read_text())
-settings = config["devices"]["wb-dali_23_bus_1_1"]
+settings = config["devices"][0]
 items = payloads("wb-dali_23_bus_1_1", settings, "homeassistant")
 bodies = [body for _, body in items]
 

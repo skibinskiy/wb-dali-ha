@@ -40,6 +40,12 @@ The WebUI schema is a safe editor for the selected devices and controls.
 The service's `--discover` command can be used to generate a starting config
 from the currently retained WB MQTT topics.
 
+When the WebUI page is opened, the configurator reads the retained DALI MQTT
+topics again. Removed or re-addressed DALI devices are therefore replaced by
+their current MQTT identifiers. Each device is shown as a separate form item;
+its controls are selected with checkboxes and only selected controls are
+published to Home Assistant Discovery.
+
 ## Installation for users
 
 After a GitHub release exists, users install the latest package on a Wiren

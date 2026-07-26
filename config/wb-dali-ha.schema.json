@@ -1,6 +1,7 @@
 {
   "type": "object",
   "title": "DALI → Home Assistant",
+  "description": "Выберите устройства DALI и контролы, которые нужно передать в Home Assistant. Список обновляется автоматически из MQTT при открытии страницы.",
   "configFile": {
     "path": "/etc/wb-dali-ha.json",
     "service": "wb-dali-ha",
@@ -13,34 +14,40 @@
   "properties": {
     "mqtt": {
       "type": "object",
-      "title": "MQTT",
+      "title": "Подключение MQTT",
+      "propertyOrder": 1,
       "properties": {
-        "host": { "type": "string", "default": "127.0.0.1" },
-        "port": { "type": "integer", "default": 1883, "minimum": 1, "maximum": 65535 },
-        "username": { "type": "string", "default": "" },
-        "password": { "type": "string", "format": "password", "default": "" },
-        "discovery_prefix": { "type": "string", "default": "homeassistant" }
+        "host": { "type": "string", "title": "MQTT-сервер", "default": "127.0.0.1" },
+        "port": { "type": "integer", "title": "Порт", "default": 1883, "minimum": 1, "maximum": 65535 },
+        "username": { "type": "string", "title": "Пользователь", "default": "" },
+        "password": { "type": "string", "title": "Пароль", "format": "password", "default": "" },
+        "discovery_prefix": { "type": "string", "title": "Префикс Discovery", "default": "homeassistant" }
       }
     },
     "devices": {
-      "type": "object",
-      "title": "DALI devices",
-      "additionalProperties": {
+      "type": "array",
+      "title": "Устройства DALI",
+      "propertyOrder": 2,
+      "items": {
         "type": "object",
+        "title": "Устройство DALI",
         "properties": {
-          "name": { "type": "string" },
-          "light": { "type": "boolean", "default": true },
+          "id": { "type": "string", "title": "Идентификатор устройства", "readOnly": true, "propertyOrder": 1 },
+          "name": { "type": "string", "title": "Название в Home Assistant", "propertyOrder": 2 },
+          "light": { "type": "boolean", "title": "Создать светильник", "_format": "checkbox", "default": true, "propertyOrder": 3 },
           "controls": {
             "type": "object",
+            "title": "Контролы для передачи в Home Assistant",
+            "propertyOrder": 4,
             "properties": {
-              "wanted_level": { "type": "boolean", "default": true },
-              "actual_level": { "type": "boolean", "default": true },
-              "on_and_step_up": { "type": "boolean", "default": true },
-              "off": { "type": "boolean", "default": true },
-              "step_up": { "type": "boolean", "default": false },
-              "step_down": { "type": "boolean", "default": false },
-              "go_to_scene": { "type": "boolean", "default": false },
-              "error_status": { "type": "boolean", "default": true }
+              "wanted_level": { "type": "boolean", "title": "Яркость (wanted_level)", "_format": "checkbox" },
+              "actual_level": { "type": "boolean", "title": "Текущая яркость (actual_level)", "_format": "checkbox" },
+              "on_and_step_up": { "type": "boolean", "title": "Включение (on_and_step_up)", "_format": "checkbox" },
+              "off": { "type": "boolean", "title": "Выключение (off)", "_format": "checkbox" },
+              "step_up": { "type": "boolean", "title": "Увеличить яркость (step_up)", "_format": "checkbox" },
+              "step_down": { "type": "boolean", "title": "Уменьшить яркость (step_down)", "_format": "checkbox" },
+              "go_to_scene": { "type": "boolean", "title": "Сцена (go_to_scene)", "_format": "checkbox" },
+              "error_status": { "type": "boolean", "title": "Ошибка DALI (error_status)", "_format": "checkbox" }
             }
           }
         }

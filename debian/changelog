@@ -1,3 +1,11 @@
+wb-dali-ha (0.2.0) unstable; urgency=low
+
+  * Refresh DALI devices from MQTT when the WebUI configuration is opened.
+  * Replace stale device addresses and present controls as checkboxes.
+  * Store devices as a readable list instead of a dynamic JSON object.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 18:30:00 +0600
+
 wb-dali-ha (0.1.5) unstable; urgency=low
 
   * Install the systemd unit under /etc/systemd/system for older controllers.

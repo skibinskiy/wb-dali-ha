@@ -7,8 +7,9 @@
     "client_id": "wb-dali-ha",
     "discovery_prefix": "homeassistant"
   },
-  "devices": {
-    "wb-dali_23_bus_1_1": {
+  "devices": [
+    {
+      "id": "wb-dali_23_bus_1_1",
       "name": "SDL60-24VF6",
       "light": true,
       "controls": {
@@ -22,5 +23,5 @@
         "error_status": true
       }
     }
-  }
+  ]
 }

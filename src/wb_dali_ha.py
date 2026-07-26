@@ -29,6 +29,18 @@ def read_config(path):
     return data
 
 
+def device_items(config):
+    """Return (device_id, settings) for both legacy and current config formats."""
+    devices = config.get("devices", {})
+    if isinstance(devices, dict):
+        return list(devices.items())
+    return [
+        (item.get("id"), item)
+        for item in devices
+        if isinstance(item, dict) and item.get("id")
+    ]
+
+
 def wb_topic(device, control, command=False):
     suffix = "/on" if command else ""
     return f"{ROOT}{device}/controls/{control}{suffix}"
@@ -131,7 +143,7 @@ def payloads(device, settings, prefix):
 
 def publish_all(client, config):
     prefix = config["mqtt"].get("discovery_prefix", "homeassistant").strip("/")
-    for device, settings in config.get("devices", {}).items():
+    for device, settings in device_items(config):
         for topic, body in payloads(device, settings, prefix):
             client.publish(topic, json.dumps(body, separators=(",", ":")), qos=1, retain=True)
             LOG.info("published %s", topic)
@@ -149,15 +161,16 @@ def discover(client, config):
     client.subscribe("/devices/+/controls/#", qos=1)
     time.sleep(2)
     result = dict(config)
-    result["devices"] = {}
+    result["devices"] = []
     for device, controls in sorted(found.items()):
         if not device.startswith("wb-dali"):
             continue
-        result["devices"][device] = {
+        result["devices"].append({
+            "id": device,
             "name": device,
             "light": True,
             "controls": {control: control in {"wanted_level", "actual_level", "on_and_step_up", "off", "error_status"} for control in sorted(controls)}
-        }
+        })
     return result
 
 
