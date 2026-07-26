@@ -1,3 +1,10 @@
+wb-dali-ha (0.1.3) unstable; urgency=low
+
+  * Build the package with gzip compression for compatibility with older dpkg.
+  * Fail the installer when dpkg cannot install the package.
+
+ -- Wiren Board DALI HA contributors <noreply@example.invalid>  Sun, 26 Jul 2026 18:00:00 +0600
+
 wb-dali-ha (0.1.2) unstable; urgency=low
 
   * Install build-essential in the GitHub Actions build environment.

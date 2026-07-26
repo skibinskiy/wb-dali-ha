@@ -23,6 +23,12 @@ fi
 echo "Downloading $ASSET_URL"
 curl -fsSL "$ASSET_URL" -o "$TMP_DIR/wb-dali-ha.deb"
 dpkg -i "$TMP_DIR/wb-dali-ha.deb" || true
-apt-get install -f -y
+if ! dpkg-query -W -f='${Status}' wb-dali-ha 2>/dev/null | grep -q 'install ok installed'; then
+    apt-get install -f -y
+fi
+if ! dpkg-query -W -f='${Status}' wb-dali-ha 2>/dev/null | grep -q 'install ok installed'; then
+    echo "wb-dali-ha installation failed" >&2
+    exit 1
+fi
 systemctl enable --now wb-dali-ha.service
 echo "wb-dali-ha installed successfully"

@@ -18,7 +18,7 @@ jobs:
       - name: Run tests
         run: make test
       - name: Build package
-        run: dpkg-buildpackage -us -uc
+        run: dpkg-buildpackage -us -uc -Zgzip
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
