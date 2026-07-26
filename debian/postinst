@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+if [ ! -f /etc/wb-dali-ha.json ]; then
+    cp /etc/wb-dali-ha.example.json /etc/wb-dali-ha.json
+fi
+systemctl daemon-reload || true
+systemctl enable wb-dali-ha.service || true
+systemctl restart wb-dali-ha.service || true
+exit 0

@@ -1,0 +1,12 @@
+Source: wb-dali-ha
+Section: admin
+Priority: optional
+Maintainer: Local Wiren Board integration
+Build-Depends: debhelper-compat (= 13)
+Standards-Version: 4.6.2
+
+Package: wb-dali-ha
+Architecture: all
+Depends: ${misc:Depends}, python3, python3-paho-mqtt
+Description: Wiren Board DALI to Home Assistant MQTT Discovery bridge
+ Publishes selected wb-mqtt-dali controls as Home Assistant MQTT Discovery entities.

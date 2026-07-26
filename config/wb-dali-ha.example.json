@@ -1,0 +1,26 @@
+{
+  "mqtt": {
+    "host": "127.0.0.1",
+    "port": 1883,
+    "username": "",
+    "password": "",
+    "client_id": "wb-dali-ha",
+    "discovery_prefix": "homeassistant"
+  },
+  "devices": {
+    "wb-dali_23_bus_1_1": {
+      "name": "SDL60-24VF6",
+      "light": true,
+      "controls": {
+        "wanted_level": true,
+        "actual_level": true,
+        "on_and_step_up": true,
+        "off": true,
+        "step_up": false,
+        "step_down": false,
+        "go_to_scene": false,
+        "error_status": true
+      }
+    }
+  }
+}

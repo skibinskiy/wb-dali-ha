@@ -1,0 +1,14 @@
+[Unit]
+Description=Wiren Board DALI Home Assistant MQTT Discovery bridge
+After=mosquitto.service wb-mqtt-dali.service
+Wants=mosquitto.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/lib/wb-dali-ha/wb_dali_ha.py --config /etc/wb-dali-ha.json
+Restart=on-failure
+RestartSec=5
+User=root
+
+[Install]
+WantedBy=multi-user.target

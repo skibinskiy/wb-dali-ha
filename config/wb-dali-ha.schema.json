@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "title": "DALI → Home Assistant",
+  "configFile": {
+    "path": "/etc/wb-dali-ha.json",
+    "service": "wb-dali-ha",
+    "fromJSON": ["/usr/lib/wb-dali-ha/wb_dali_ha_config.py", "--from-json"],
+    "toJSON": ["/usr/lib/wb-dali-ha/wb_dali_ha_config.py", "--to-json"],
+    "restartDelayMS": 1000,
+    "validate": true,
+    "needReload": true
+  },
+  "properties": {
+    "mqtt": {
+      "type": "object",
+      "title": "MQTT",
+      "properties": {
+        "host": { "type": "string", "default": "127.0.0.1" },
+        "port": { "type": "integer", "default": 1883, "minimum": 1, "maximum": 65535 },
+        "username": { "type": "string", "default": "" },
+        "password": { "type": "string", "format": "password", "default": "" },
+        "discovery_prefix": { "type": "string", "default": "homeassistant" }
+      }
+    },
+    "devices": {
+      "type": "object",
+      "title": "DALI devices",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "light": { "type": "boolean", "default": true },
+          "controls": {
+            "type": "object",
+            "properties": {
+              "wanted_level": { "type": "boolean", "default": true },
+              "actual_level": { "type": "boolean", "default": true },
+              "on_and_step_up": { "type": "boolean", "default": true },
+              "off": { "type": "boolean", "default": true },
+              "step_up": { "type": "boolean", "default": false },
+              "step_down": { "type": "boolean", "default": false },
+              "go_to_scene": { "type": "boolean", "default": false },
+              "error_status": { "type": "boolean", "default": true }
+            }
+          }
+        }
+      }
+    }
+  }
+}
